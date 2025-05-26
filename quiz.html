@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>당신의 전생 직업은?</title>
+  <style>
+    body {
+      font-family: 'Apple SD Gothic Neo', sans-serif;
+      background: linear-gradient(145deg, #ffefef, #e5f5ff);
+      padding: 0;
+      margin: 0;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem;
+      background: #ffffff;
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      margin-top: 2rem;
+    }
+    .start-page, .question-page, .result-page {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    button {
+      background-color: #fca3b7;
+      border: none;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      font-size: 1rem;
+      display: block;
+      margin: 1rem auto;
+    }
+    .question {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+    .answers label {
+      display: block;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .loading {
+      text-align: center;
+      font-size: 1.2rem;
+      display: none;
+    }
+    .character-image {
+      max-width: 100%;
+      margin-top: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="start-page active" id="start-page">
+      <h1>🔮 당신의 전생 직업은?</h1>
+      <p style="text-align:center;">전생의 나를 만나고 싶은가요?</p>
+      <button onclick="startQuiz()">시작하기</button>
+    </div>
+
+    <div class="question-page" id="question-page">
+      <div id="question-container"></div>
+      <button onclick="nextQuestion()">다음</button>
+    </div>
+
+    <div class="loading" id="loading">전생을 조회 중입니다...</div>
+
+    <div class="result-page" id="result-page">
+      <h2>✨ 당신의 전생 직업은 ✨</h2>
+      <div id="result-content" style="text-align:center;"></div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      "아침에 눈 떴을 때 드는 첫 생각은?",
+      "회식 자리에서 당신의 모습은?",
+      "회사에서 스트레스받을 때 해결책은?",
+      "이상형을 고르자면?",
+      "어릴 적 가장 하고 싶었던 직업은?",
+      "사람들이 당신에게 자주 하는 말은?",
+      "주말에 하고 싶은 활동은?",
+      "나에게 ‘일’이란?",
+      "연애할 때 나는?",
+      "전생에서 가져올 수 있다면?"
+    ];
+
+    const choices = [
+      ["현실 도피!", "계획 세우기", "재밌는 일 찾기", "명상과 감정정리"],
+      ["눈치껏 웃는다", "MC를 맡는다", "센스있는 멘트", "사람들 챙긴다"],
+      ["혼자만의 시간 갖기", "해결방안 찾기", "수다 떨기", "산책/명상"],
+      ["신비롭고 이해할 수 없는 사람", "똑똑한 사람", "끼 넘치는 사람", "다정한 사람"],
+      ["마법사, 히어로", "판사, 과학자", "배우, 아이돌", "간호사, 선생님"],
+      ["넌 비밀이 많아 보여", "진짜 철두철미해", "재밌어", "따뜻해"],
+      ["방콕 상상력 풀가동", "계획 짠 여행", "즉흥 번개", "반려동물과 산책"],
+      ["삶을 유지하는 수단", "내가 성장하는 장", "표현하는 무대", "돕기 위한 도구"],
+      ["감정 표현이 서툼", "책임감 강한 편", "애정 표현 풍부", "한결같고 헌신적"],
+      ["초능력", "비밀 문서와 전략서", "화려한 외모", "힐링 능력"]
+    ];
+
+    const results = [
+      { title: "왕국의 책사", desc: "전략적이고 냉철한 판단력으로 모두를 이끌던 당신! 지금도 회의실에서 빛나는 중.", img: "book" },
+      { title: "신전의 무녀", desc: "사람들의 감정을 어루만지던 전생의 당신, 지금도 사람들의 고민을 자연스럽게 끌어안죠.", img: "temple" },
+      { title: "도적단 리더", desc: "통제 불가 자유 영혼! 전생의 감각으로 회식도 업무도 완벽하게 스르륵 빠져나가요.", img: "rogue" },
+      { title: "궁정의 광대", desc: "웃음과 말솜씨로 궁정을 휘어잡았던 당신, 지금도 사람들 분위기를 좌지우지합니다!", img: "clown" },
+      { title: "은둔 철학자", desc: "모두가 시끄러워도 조용히 본질을 꿰뚫던 당신. 내면이 깊은 직장인 모드 ON.", img: "philosopher" },
+      { title: "왕국의 기사단장", desc: "책임감으로 무장한 리더! 프로젝트를 끝까지 밀어붙이는 에너지, 전생 그대로입니다.", img: "knight" },
+      { title: "숲의 치유사", desc: "다정하고 포근한 존재. 누구보다 따뜻한 눈빛으로 사람을 치유했던 존재입니다.", img: "healer" },
+      { title: "마법사 견습생", desc: "조금 허당 같지만 창의력은 폭발! 지금도 새로운 아이디어로 마법 같은 결과를 만들죠.", img: "wizard" }
+    ];
+
+    let currentQuestion = 0;
+    const scores = new Array(results.length).fill(0);
+
+    function startQuiz() {
+      document.getElementById("start-page").classList.remove("active");
+      document.getElementById("question-page").classList.add("active");
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const container = document.getElementById("question-container");
+      container.innerHTML = '';
+      const q = questions[currentQuestion];
+      const qDiv = document.createElement("div");
+      qDiv.className = "question";
+      qDiv.innerHTML = `<p><strong>Q${currentQuestion+1}. ${q}</strong></p>`;
+      choices[currentQuestion].forEach((choice, j) => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type='radio' name='q' value='${j}'> ${choice}`;
+        qDiv.appendChild(label);
+      });
+      container.appendChild(qDiv);
+    }
+
+    function nextQuestion() {
+      const selected = document.querySelector("input[name='q']:checked");
+      if (!selected) {
+        alert("선택지를 골라주세요!");
+        return;
+      }
+      const index = parseInt(selected.value);
+      scores[index % scores.length] += 1;
+
+      currentQuestion++;
+      if (currentQuestion >= questions.length) {
+        showResult();
+      } else {
+        showQuestion();
+      }
+    }
+
+    function showResult() {
+      document.getElementById("question-page").classList.remove("active");
+      document.getElementById("loading").style.display = "block";
+      setTimeout(() => {
+        const maxScore = Math.max(...scores);
+        const jobIndex = scores.indexOf(maxScore);
+        const r = results[jobIndex];
+        const resultDiv = document.getElementById("result-content");
+        resultDiv.innerHTML = `
+          <h3 style='color:#f67280'>${r.title}</h3>
+          <p>${r.desc}</p>
+          <img src="https://source.unsplash.com/400x300/?${r.img}" class="character-image" alt="${r.title}">
+        `;
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("result-page").classList.add("active");
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
